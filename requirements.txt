@@ -9,3 +9,12 @@ boto3
 langchain_aws
 langchain-google-genai
 langchain-ollama
+
+streamlit
+groq
+openai
+requests
+pandas
+folium
+geopandas
+geoapify

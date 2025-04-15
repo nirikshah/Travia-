@@ -1,0 +1,24 @@
+body {
+    background-color: #f0f0f0;
+    color: #333;
+    font-family: 'Arial', sans-serif;
+}
+.stTextInput input {
+    background-color: #fff;
+    color: #333;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+.stButton button {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    border: none;
+}
+.stChatMessage {
+    background-color: #fafafa;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}

@@ -1,0 +1,36 @@
+/* Register Page Styles */
+body {
+    background-color: #ff7e5f; /* Darker background color for register page */
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.stTextInput input {
+    background-color: #333;
+    color: white;
+    border-radius: 5px;
+    border: 1px solid #fff;
+    padding: 12px;
+}
+
+.stButton button {
+    background-color: #feb47b;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    padding: 12px;
+}
+
+.stRadio label {
+    color: white;
+}
+
+.stTitle {
+    color: white;
+}

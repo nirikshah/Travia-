@@ -1,0 +1,22 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #ff7e5f;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.stTextInput input {
+    background-color: #333;
+    color: white;
+    border-radius: 5px;
+    border: 1px solid #fff;
+}
+.stButton button {
+    background-color: #feb47b;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+}

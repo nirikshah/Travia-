@@ -1,0 +1,19 @@
+{
+  "nishanth": {
+    "password": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+  },
+  "shami": {
+    "password": "a7d3e4b3fc6124d8622732b40710863e76f85324d396dfdea0bc742cfd6b87b3"
+  },
+  "nishu": {
+    "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+  },
+  "modi": {
+    "password_hash": "ef51306214d9a6361ee1d5b452e6d2bb70dc7ebb85bf9e02c3d4747fb57d6bec",
+    "email": "nishuniriksha81@gmail.com"
+  },
+  "shiru": {
+    "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "email": "shirshikapgowda18@gmail.com"
+  }
+}

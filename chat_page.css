@@ -1,0 +1,65 @@
+/* Chat Interface Page Styles */
+body {
+    background-color: #f0f0f0; /* Lighter background for chat interface */
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.chat-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 50px;
+    height: 80%;
+    overflow-y: auto;
+}
+
+.chat-message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 75%;
+}
+
+.chat-message.user {
+    background-color: #e0f7fa;
+    align-self: flex-end;
+}
+
+.chat-message.assistant {
+    background-color: #f1f1f1;
+    align-self: flex-start;
+}
+
+.stButton button {
+    background-color: #4caf50;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.stButton button:hover {
+    background-color: #45a049;
+}
+
+.stTextInput input {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+}

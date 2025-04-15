@@ -1,0 +1,253 @@
+import streamlit as st
+import json
+from hashlib import sha256
+import aws_main as aws
+import azure_main as azure
+import gemini_main as gemini
+import ollama_main as ollama
+
+# Define JSON file paths for user data, chat logs, and accuracy tracking
+USERS_FILE = 'users.json'
+CHAT_LOGS_FILE = 'chat_logs.json'
+ACCURACY_FILE = 'accuracy_logs.json'
+
+# Function to hash passwords for secure storage
+def hash_password(password):
+    return sha256(password.encode()).hexdigest()
+
+# Load users from JSON file
+def load_users():
+    try:
+        with open(USERS_FILE, 'r') as f:
+            users = json.load(f)
+    except FileNotFoundError:
+        users = {}
+    return users
+
+# Save users to JSON file
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=4)
+
+# Registration Page
+def register_user(username, password):
+    users = load_users()
+
+    if username in users:
+        return "Username already exists."
+    else:
+        users[username] = {'password': hash_password(password)}
+        save_users(users)
+        return "User registered successfully."
+
+# Login Page
+def authenticate_user(username, password):
+    users = load_users()
+
+    if username in users and users[username]['password'] == hash_password(password):
+        return True
+    else:
+        return False
+
+# Function to load chat logs from JSON file
+def load_chat_logs():
+    try:
+        with open(CHAT_LOGS_FILE, 'r') as f:
+            chat_logs = json.load(f)
+    except FileNotFoundError:
+        chat_logs = []
+    return chat_logs
+
+# Save chat logs to JSON file
+def save_chat_logs(chat_logs):
+    with open(CHAT_LOGS_FILE, 'w') as f:
+        json.dump(chat_logs, f, indent=4)
+
+# Function to load accuracy logs
+def load_accuracy_logs():
+    try:
+        with open(ACCURACY_FILE, 'r') as f:
+            accuracy_logs = json.load(f)
+    except FileNotFoundError:
+        accuracy_logs = []
+    return accuracy_logs
+
+# Save accuracy logs to JSON file
+def save_accuracy_logs(accuracy_logs):
+    with open(ACCURACY_FILE, 'w') as f:
+        json.dump(accuracy_logs, f, indent=4)
+
+# Calculate accuracy based on response length or some other metric
+def calculate_accuracy(response):
+    # Simple accuracy metric: length of the response
+    return len(response)
+
+# Function to load CSS
+def load_css(file_path):
+    with open(file_path) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Streamlit UI
+st.set_page_config(page_title="Chatbot", page_icon="🤖")
+
+# Load CSS for the registration page
+load_css('register_page.css')  # Make sure the .css file is in the same directory
+
+# Full Screen Login Page (Visible only when not logged in)
+if 'logged_in' not in st.session_state or not st.session_state.logged_in:
+    st.title("Welcome! Please Log In or Register")
+    
+    # Registration or Login
+    choice = st.radio("Choose an option", ("Login", "Register"))
+
+    if choice == "Register":
+        # Registration Form with Chatbot Symbols
+        st.title("Register for Access")
+
+        st.markdown("""
+        <div class="register-container">
+            <h2>Register for Access</h2>
+            <p>Fill in your details to get started with our chatbot.</p>
+            <form>
+                <input type="text" placeholder="Enter Username" style="padding: 10px; width: 100%; margin-bottom: 10px;" id="username"/>
+                <input type="password" placeholder="Enter Password" style="padding: 10px; width: 100%; margin-bottom: 10px;" id="password"/>
+                <input type="password" placeholder="Confirm Password" style="padding: 10px; width: 100%; margin-bottom: 10px;" id="confirm_password"/>
+                <button style="background-color: #feb47b; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px;">
+                    Register
+                </button>
+            </form>
+        </div>
+        """, unsafe_allow_html=True)
+
+        username = st.text_input("Enter Username")
+        password = st.text_input("Enter Password", type="password")
+        confirm_password = st.text_input("Confirm Password", type="password")
+
+        if password == confirm_password and st.button("Register"):
+            message = register_user(username, password)
+            st.success(message) if "successfully" in message else st.error(message)
+
+    elif choice == "Login":
+        st.title("Log In")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            if authenticate_user(username, password):
+                st.session_state.username = username
+                st.session_state.logged_in = True
+                st.session_state.logged_in_message = f"Welcome {username}!"
+                st.success(st.session_state.logged_in_message)
+                st.rerun()  # Refresh the page to load the chat interface
+            else:
+                st.error("Invalid credentials. Please try again.")
+
+# Main Chat Interface (visible after login)
+if 'logged_in' in st.session_state and st.session_state.logged_in:
+    # Sidebar: Temperature Configuration
+    with st.sidebar:
+        st.title("Config")
+        temperature = st.slider("Set Temperature", 0.0, 1.0, 0.7)
+
+    # Main Chat Interface
+    st.title("Chat with Multiple Chatbots")
+
+    # Define chat history if not in session
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    # Display previous chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # User input in a form for including buttons
+    with st.form(key='chat_input_form', clear_on_submit=True):
+        prompt = st.text_input("Ask me something")
+        
+        # Buttons for "Search" and "Reason" within the chat input area
+        search_button = st.form_submit_button("Search")
+        reason_button = st.form_submit_button("Reason")
+
+        if prompt:
+            # Add user message to history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
+            # Collect responses from each chatbot
+            responses = {}
+            origins = {}
+            accuracy = {}
+
+            # Collect responses from all chatbots
+            responses['Llama'] = aws.LLM_QnA_agent(prompt, temperature)
+            responses['Mixtreval'] = azure.LLM_QnA_agent(prompt, temperature)
+            responses['Gemma'] = gemini.LLM_QnA_agent(prompt, temperature)
+            responses['Gemini'] = ollama.LLM_QnA_agent(prompt, temperature)
+
+            # Store the chatbot origin
+            origins['Llama'] = "AWS Chatbot"
+            origins['Mixtreval'] = "Azure Chatbot"
+            origins['Gemma'] = "Gemini Chatbot"
+            origins['Gemini'] = "Ollama Chatbot"
+
+            # Calculate accuracy for each response
+            for chatbot, response in responses.items():
+                accuracy[chatbot] = calculate_accuracy(response)
+
+            # Find the chatbot with the highest accuracy
+            best_chatbot = max(accuracy, key=accuracy.get)
+            best_response = responses[best_chatbot]
+            best_origin = origins[best_chatbot]
+
+            # Show response from the most accurate chatbot
+            with st.chat_message("assistant"):
+                st.markdown(f"*Most Accurate Response From:* {best_origin}")
+                st.markdown(f"*Response:* {best_response}")
+
+            # Log the chat history in the JSON file
+            chat_logs = load_chat_logs()
+            chat_logs.append({
+                'user': st.session_state.username,
+                'prompt': prompt,
+                'response': best_response,
+                'origin': best_origin
+            })
+            save_chat_logs(chat_logs)
+
+            # Track accuracy in a separate log file with all four chatbots
+            accuracy_logs = load_accuracy_logs()
+            accuracy_logs.append({
+                'user': st.session_state.username,
+                'prompt': prompt,
+                'AWS': responses['Llama'],
+                'Azure': responses['Mixtreval'],
+                'Gemini': responses['Gemma'],
+                'Ollama': responses['Gemini'],
+                'best_response': best_response,
+                'best_origin': best_origin,
+                'accuracy': accuracy
+            })
+            save_accuracy_logs(accuracy_logs)
+
+            # Add the assistant's response to history
+            st.session_state.messages.append({"role": "assistant", "content": best_response})
+
+        # Handle "Search" button click
+        if search_button:
+            search_term = st.text_input("Enter keyword to search in chat logs")
+            if search_term:
+                # Search chat logs for the term and display results
+                chat_logs = load_chat_logs()
+                search_results = [log for log in chat_logs if search_term.lower() in log['prompt'].lower()]
+                if search_results:
+                    for result in search_results:
+                        st.write(f"User: {result['user']}, Prompt: {result['prompt']}, Response: {result['response']}")
+                else:
+                    st.write("No results found.")
+
+        # Handle "Reason" button click
+        if reason_button:
+            # Display the reasoning behind the chatbot's response selection
+            with st.chat_message("assistant"):
+                st.markdown(f"**Reasoning behind the response:**")
+                st.markdown(f"Chatbot {best_origin} provided the most accurate response based on a simple accuracy score, which is the length of the response in this case. The chosen chatbot had the longest (or most detailed) answer to the user's query.")
